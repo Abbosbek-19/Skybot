@@ -144,3 +144,10 @@ c:\Users\mirsa\Desktop\Skybot\obj\Release\net8.0\refint\SkyBot.dll
 c:\Users\mirsa\Desktop\Skybot\obj\Release\net8.0\SkyBot.pdb
 c:\Users\mirsa\Desktop\Skybot\obj\Release\net8.0\SkyBot.genruntimeconfig.cache
 c:\Users\mirsa\Desktop\Skybot\obj\Release\net8.0\ref\SkyBot.dll
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\net461-x86\GetDocument.Insider.exe.config
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\net461\GetDocument.Insider.exe.config
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.entityframeworkcore.tools\8.0.0\tools\netcoreapp2.0\any\ef.runtimeconfig.json
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\dotnet-getdocument.deps.json
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\dotnet-getdocument.runtimeconfig.json
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\netcoreapp2.1\GetDocument.Insider.deps.json
+c:\Users\mirsa\Desktop\Skybot\bin\Release\net8.0\packages\microsoft.extensions.apidescription.server\6.0.5\tools\netcoreapp2.1\GetDocument.Insider.runtimeconfig.json

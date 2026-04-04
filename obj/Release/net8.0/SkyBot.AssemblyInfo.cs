@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SkyBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1ef15d8e7eccbb76c75137204c8a8234ae32d91e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8cd757307160c790e38fbe5258f813d702d2a742")]
 [assembly: System.Reflection.AssemblyProductAttribute("SkyBot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SkyBot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
