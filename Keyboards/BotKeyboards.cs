@@ -1,147 +1,201 @@
-using System.Collections.Generic;
-using System.Linq;
 using SkyBot.Localization;
+using SkyBot.Models;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SkyBot.Keyboards;
 
 /// <summary>
-/// Factory class for all InlineKeyboardMarkup objects used in the bot.
-/// All button labels come from UzMessages constants — never hardcoded here.
-/// CallbackData strings are short English keys parsed by CallbackQueryHandler.
+/// Factory class for all InlineKeyboardMarkup objects.
+/// All button labels come from MessageResolver — supports 3 languages.
 /// </summary>
 public static class BotKeyboards
 {
-    // ─── Main Menu ───────────────────────────────────────────────────────────
-    // Shown after /start and when user presses "🏠 Asosiy menyu"
+    // ─── Language Selection ────────────────────────────────────────────────
 
-    public static InlineKeyboardMarkup MainMenu() => new(new[]
+    public static InlineKeyboardMarkup LanguagePicker() => new(new[]
     {
         new[]
         {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnWeather,   "cmd_weather"),
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnForecast,  "cmd_forecast"),
-        },
-        new[]
-        {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnSubscribe,   "cmd_subscribe"),
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnUnsubscribe, "cmd_unsubscribe"),
-        },
-        new[]
-        {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnHistory, "cmd_history"),
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnStats,   "cmd_stats"),
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangUzbek, "lang_uz"),
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangEnglish, "lang_en"),
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangRussian, "lang_ru"),
         },
     });
 
-    // ─── Weather Result ──────────────────────────────────────────────────────
-    // Shown below every weather result message.
-    // {city} is embedded in callback data so the handler knows which city to use.
+    // ─── Main Menu ─────────────────────────────────────────────────────────
 
-    public static InlineKeyboardMarkup WeatherResult(string city)
+    public static InlineKeyboardMarkup MainMenu(BotUser user) => new(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnWeather"),   "cmd_weather"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnForecast"),  "cmd_forecast"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnReminder"),    "cmd_reminder"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnCancelReminder"), "cmd_cancel_reminder"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnHistory"), "cmd_history"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnStats"),   "cmd_stats"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnSettings"), "cmd_settings"),
+        },
+    });
+
+    // ─── Weather Result ────────────────────────────────────────────────────
+
+    public static InlineKeyboardMarkup WeatherResult(BotUser user, string city)
     {
         var encodedCity = Uri.EscapeDataString(city);
         return new InlineKeyboardMarkup(new[]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnRefresh,       $"refresh_{encodedCity}"),
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnForecast,      $"forecast_{encodedCity}"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnRefresh"),       $"refresh_{encodedCity}"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnForecast"),      $"forecast_{encodedCity}"),
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnSubscribeCity, $"subscribe_city_{encodedCity}"),
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnMainMenu,      "main_menu"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnReminderCity"),  $"reminder_city_{encodedCity}"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnMainMenu"),      "main_menu"),
             },
         });
     }
 
-    // ─── Forecast result ─────────────────────────────────────────────────────
+    // ─── Forecast result ───────────────────────────────────────────────────
 
-    public static InlineKeyboardMarkup ForecastResult(string city)
+    public static InlineKeyboardMarkup ForecastResult(BotUser user, string city)
     {
         var encodedCity = Uri.EscapeDataString(city);
         return new InlineKeyboardMarkup(new[]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnWeather,  $"refresh_{encodedCity}"),
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnMainMenu, "main_menu"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnWeather"),  $"refresh_{encodedCity}"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnMainMenu"), "main_menu"),
             },
         });
     }
 
-    // ─── Subscribe: hour selection ───────────────────────────────────────────
-    // Shown after user types a city name for subscription.
-    // CallbackData format: "hour_{cityEncoded}_{hour}"
+    // ─── Reminder: hour selection ──────────────────────────────────────────
+    // Labels show Uzbekistan time (UTC+5), callback data sends UTC hour.
+    // 06:00 UZT = 01:00 UTC, etc.
 
-    public static InlineKeyboardMarkup SubscribeHourPicker(string city)
+    public static InlineKeyboardMarkup ReminderHourPicker(BotUser user, string city)
     {
         var c = Uri.EscapeDataString(city);
         return new InlineKeyboardMarkup(new[]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("06:00", $"hour_{c}_6"),
-                InlineKeyboardButton.WithCallbackData("07:00", $"hour_{c}_7"),
-                InlineKeyboardButton.WithCallbackData("08:00", $"hour_{c}_8"),
+                InlineKeyboardButton.WithCallbackData("06:00", $"hour_{c}_1"),
+                InlineKeyboardButton.WithCallbackData("07:00", $"hour_{c}_2"),
+                InlineKeyboardButton.WithCallbackData("08:00", $"hour_{c}_3"),
             },
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("09:00", $"hour_{c}_9"),
-                InlineKeyboardButton.WithCallbackData("12:00", $"hour_{c}_12"),
-                InlineKeyboardButton.WithCallbackData("18:00", $"hour_{c}_18"),
+                InlineKeyboardButton.WithCallbackData("09:00", $"hour_{c}_4"),
+                InlineKeyboardButton.WithCallbackData("11:00", $"hour_{c}_6"),
+                InlineKeyboardButton.WithCallbackData("12:00", $"hour_{c}_7"),
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("13:00", $"hour_{c}_8"),
+                InlineKeyboardButton.WithCallbackData("14:00", $"hour_{c}_9"),
+                InlineKeyboardButton.WithCallbackData("17:00", $"hour_{c}_12"),
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("23:00", $"hour_{c}_18"),
             },
         });
     }
 
-    // ─── Subscribe: confirm/cancel ───────────────────────────────────────────
-    // CallbackData format: "confirm_sub_{cityEncoded}_{hour}" and "cancel_sub"
+    // ─── Reminder: confirm/cancel ──────────────────────────────────────────
 
-    public static InlineKeyboardMarkup SubscribeConfirm(string city, int hour)
+    public static InlineKeyboardMarkup ReminderConfirm(BotUser user, string city, int hour)
     {
         var c = Uri.EscapeDataString(city);
         return new InlineKeyboardMarkup(new[]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnConfirmYes, $"confirm_sub_{c}_{hour}"),
-                InlineKeyboardButton.WithCallbackData(UzMessages.BtnConfirmNo,  "cancel_sub"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnConfirmYes"), $"confirm_reminder_{c}_{hour}"),
+                InlineKeyboardButton.WithCallbackData(Msg(user, "BtnConfirmNo"),  "cancel_reminder_flow"),
             },
         });
     }
 
-    // ─── Admin Panel ─────────────────────────────────────────────────────────
+    // ─── Settings ───────────────────────────────────────────────────────────
 
-    public static InlineKeyboardMarkup AdminPanel() => new(new[]
+    public static InlineKeyboardMarkup SettingsPanel(BotUser user) => new(new[]
     {
         new[]
         {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnAdminUsers,     "admin_users_1"),
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnAdminStats,     "admin_stats"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnChangeLanguage"), "cmd_change_language"),
         },
         new[]
         {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnAdminBroadcast, "admin_broadcast"),
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnAdminBan,       "admin_ban"),
-        },
-        new[]
-        {
-            InlineKeyboardButton.WithCallbackData(UzMessages.BtnAdminMakeAdmin, "admin_makeadmin"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnMainMenu"), "main_menu"),
         },
     });
 
-    // ─── Admin: paginated user list ──────────────────────────────────────────
+    // ─── Language Change ────────────────────────────────────────────────────
 
-    public static InlineKeyboardMarkup AdminUserListPager(int currentPage, int totalPages)
+    public static InlineKeyboardMarkup LanguageChangePicker() => new(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangUzbek, "set_lang_uz"),
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangEnglish, "set_lang_en"),
+            InlineKeyboardButton.WithCallbackData(UzMessages.LangRussian, "set_lang_ru"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(new BotUser { Language = "uz" }, "BtnBack"), "cmd_settings"),
+        },
+    });
+
+    // ─── Admin Panel ───────────────────────────────────────────────────────
+
+    public static InlineKeyboardMarkup AdminPanel(BotUser user) => new(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnAdminUsers"),     "admin_users_1"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnAdminStats"),     "admin_stats"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnAdminBroadcast"), "admin_broadcast"),
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnAdminBan"),       "admin_ban"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnAdminMakeAdmin"), "admin_makeadmin"),
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData(Msg(user, "BtnMainMenu"), "main_menu"),
+        },
+    });
+
+    // ─── Admin: paginated user list ────────────────────────────────────────
+
+    public static InlineKeyboardMarkup AdminUserListPager(BotUser user, int currentPage, int totalPages)
     {
         var buttons = new List<InlineKeyboardButton>();
 
         if (currentPage > 1)
-            buttons.Add(InlineKeyboardButton.WithCallbackData("◀️ Oldingi", $"admin_users_{currentPage - 1}"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(Msg(user, "BtnPrevPage"), $"admin_users_{currentPage - 1}"));
 
         if (currentPage < totalPages)
-            buttons.Add(InlineKeyboardButton.WithCallbackData("Keyingi ▶️", $"admin_users_{currentPage + 1}"));
+            buttons.Add(InlineKeyboardButton.WithCallbackData(Msg(user, "BtnNextPage"), $"admin_users_{currentPage + 1}"));
 
         var rows = new List<InlineKeyboardButton[]>();
         if (buttons.Any())
@@ -149,9 +203,13 @@ public static class BotKeyboards
 
         rows.Add(new[]
         {
-            InlineKeyboardButton.WithCallbackData("🔙 Admin menyu", "admin_panel")
+            InlineKeyboardButton.WithCallbackData("🔙 " + Msg(user, "BtnBack"), "admin_panel")
         });
 
         return new InlineKeyboardMarkup(rows);
     }
+
+    // ─── Helper ─────────────────────────────────────────────────────────────
+
+    private static string Msg(BotUser user, string key) => MessageResolver.Get(user, key);
 }

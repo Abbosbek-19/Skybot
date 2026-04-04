@@ -45,7 +45,7 @@ public class AdminHandler
     {
         if (!requestingUser.IsAdmin)
         {
-            await _bot.SendMessage(chatId, UzMessages.NoPermission);
+            await _bot.SendMessage(chatId, MessageResolver.Get(requestingUser, "NoPermission"));
             return;
         }
 
@@ -57,8 +57,7 @@ public class AdminHandler
 
         await _bot.SendMessage(
             chatId,
-            string.Format(UzMessages.AdminStats, totalUsers, todaySearches, activeSubscriptions),
-            parseMode: ParseMode.Markdown);
+            string.Format(MessageResolver.Get(requestingUser, "AdminStats"), totalUsers, todaySearches, activeSubscriptions));
     }
 
     // ── Paginated user list ───────────────────────────────────────────────────
@@ -67,7 +66,7 @@ public class AdminHandler
     {
         if (!requestingUser.IsAdmin)
         {
-            await _bot.SendMessage(chatId, UzMessages.NoPermission);
+            await _bot.SendMessage(chatId, MessageResolver.Get(requestingUser, "NoPermission"));
             return;
         }
 
@@ -85,8 +84,8 @@ public class AdminHandler
         foreach (var u in users)
         {
             var searchCount = await _db.SearchHistories.CountAsync(sh => sh.TelegramUserId == u.TelegramUserId);
-            var subStatus = u.IsSubscribed ? UzMessages.SubscribedYes : UzMessages.SubscribedNo;
-            sb.Append(string.Format(UzMessages.AdminUserItem,
+            var subStatus = u.IsSubscribed ? MessageResolver.Get(requestingUser, "SubscribedYes") : MessageResolver.Get(requestingUser, "SubscribedNo");
+            sb.Append(string.Format(MessageResolver.Get(requestingUser, "AdminUserItem"),
                 u.FirstName,
                 u.TelegramUserId,
                 searchCount,
@@ -95,16 +94,15 @@ public class AdminHandler
 
         await _bot.SendMessage(
             chatId,
-            string.Format(UzMessages.AdminUserList, page, sb.ToString()),
-            parseMode: ParseMode.Markdown,
-            replyMarkup: BotKeyboards.AdminUserListPager(page, totalPages));
+            string.Format(MessageResolver.Get(requestingUser, "AdminUserList"), page, sb.ToString()),
+            replyMarkup: BotKeyboards.AdminUserListPager(requestingUser, page, totalPages));
     }
 
     // ── Broadcast ─────────────────────────────────────────────────────────────
 
     public async Task HandleBroadcastTextAsync(long chatId, BotUser admin, string broadcastText)
     {
-        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, UzMessages.NoPermission); return; }
+        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, MessageResolver.Get(admin, "NoPermission")); return; }
 
         var users = await _db.BotUsers
             .Where(u => !u.IsBanned)
@@ -126,27 +124,27 @@ public class AdminHandler
         }
 
         _stateService.ClearState(admin.TelegramUserId);
-        await _bot.SendMessage(chatId, string.Format(UzMessages.BroadcastDone, sent));
+        await _bot.SendMessage(chatId, string.Format(MessageResolver.Get(admin, "BroadcastDone"), sent));
     }
 
     // ── Ban user ──────────────────────────────────────────────────────────────
 
     public async Task HandleBanUserAsync(long chatId, BotUser admin, string inputId)
     {
-        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, UzMessages.NoPermission); return; }
+        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, MessageResolver.Get(admin, "NoPermission")); return; }
 
         _stateService.ClearState(admin.TelegramUserId);
 
         if (!long.TryParse(inputId.Trim(), out var targetId))
         {
-            await _bot.SendMessage(chatId, UzMessages.BanNotFound);
+            await _bot.SendMessage(chatId, MessageResolver.Get(admin, "BanNotFound"));
             return;
         }
 
         var target = await _db.BotUsers.FirstOrDefaultAsync(u => u.TelegramUserId == targetId);
         if (target == null)
         {
-            await _bot.SendMessage(chatId, UzMessages.BanNotFound);
+            await _bot.SendMessage(chatId, MessageResolver.Get(admin, "BanNotFound"));
             return;
         }
 
@@ -155,28 +153,27 @@ public class AdminHandler
 
         await _bot.SendMessage(
             chatId,
-            string.Format(UzMessages.BanSuccess, target.FirstName),
-            parseMode: ParseMode.Markdown);
+            string.Format(MessageResolver.Get(admin, "BanSuccess"), target.FirstName));
     }
 
     // ── Make admin ────────────────────────────────────────────────────────────
 
     public async Task HandleMakeAdminAsync(long chatId, BotUser admin, string inputId)
     {
-        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, UzMessages.NoPermission); return; }
+        if (!admin.IsAdmin) { await _bot.SendMessage(chatId, MessageResolver.Get(admin, "NoPermission")); return; }
 
         _stateService.ClearState(admin.TelegramUserId);
 
         if (!long.TryParse(inputId.Trim(), out var targetId))
         {
-            await _bot.SendMessage(chatId, UzMessages.MakeAdminNotFound);
+            await _bot.SendMessage(chatId, MessageResolver.Get(admin, "MakeAdminNotFound"));
             return;
         }
 
         var target = await _db.BotUsers.FirstOrDefaultAsync(u => u.TelegramUserId == targetId);
         if (target == null)
         {
-            await _bot.SendMessage(chatId, UzMessages.MakeAdminNotFound);
+            await _bot.SendMessage(chatId, MessageResolver.Get(admin, "MakeAdminNotFound"));
             return;
         }
 
@@ -185,7 +182,6 @@ public class AdminHandler
 
         await _bot.SendMessage(
             chatId,
-            string.Format(UzMessages.MakeAdminSuccess, target.FirstName),
-            parseMode: ParseMode.Markdown);
+            string.Format(MessageResolver.Get(admin, "MakeAdminSuccess"), target.FirstName));
     }
 }

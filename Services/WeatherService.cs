@@ -19,10 +19,39 @@ public class WeatherService : IWeatherService
     private readonly IConfiguration _config;
     private readonly ILogger<WeatherService> _logger;
 
+    private static readonly Dictionary<string, string> WeatherTranslations = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "clear sky", "osmon ochiq" },
+        { "few clouds", "kam bulutli" },
+        { "scattered clouds", "tarqoq bulutli" },
+        { "broken clouds", "bulutli" },
+        { "overcast clouds", "qoplamali bulutli" },
+        { "shower rain", "qisqa muddatli yomg'ir" },
+        { "rain", "yomg'ir" },
+        { "light rain", "engil yomg'ir" },
+        { "moderate rain", "o'rtacha yomg'ir" },
+        { "heavy intensity rain", "kuchli yomg'ir" },
+        { "thunderstorm", "mo'maqaldiroq" },
+        { "snow", "qor" },
+        { "mist", "tuman" },
+        { "haze", "shovqin" },
+        { "fog", "tuman" },
+        { "dust", "chang" },
+        { "sand", "qum" },
+        { "smoke", "tutun" },
+        { "drizzle", "mayda yomg'ir" }
+    };
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
+
+    public static string TranslateCondition(string condition)
+    {
+        if (string.IsNullOrEmpty(condition)) return condition;
+        return WeatherTranslations.TryGetValue(condition, out var translation) ? translation : condition;
+    }
 
     public WeatherService(
         IHttpClientFactory httpClientFactory,
@@ -63,7 +92,7 @@ public class WeatherService : IWeatherService
                 FeelsLike   = Math.Round(data.Main.FeelsLike, 1),
                 Humidity    = data.Main.Humidity,
                 WindSpeed   = Math.Round(data.Wind.Speed, 1),
-                Description = CapitalizeFirst(data.Weather.FirstOrDefault()?.Description ?? ""),
+                Description = TranslateCondition(CapitalizeFirst(data.Weather.FirstOrDefault()?.Description ?? "")),
                 UpdatedAt   = DateTimeOffset.FromUnixTimeSeconds(data.Dt).UtcDateTime
             };
         }

@@ -18,6 +18,11 @@ public class BotUser
     public string? LastName { get; set; }
 
     /// <summary>
+    /// User's preferred language: "uz" (O'zbek), "en" (English), "ru" (Russian)
+    /// </summary>
+    public string Language { get; set; } = "uz";
+
+    /// <summary>
     /// If true, this user can access /admin commands.
     /// </summary>
     public bool IsAdmin { get; set; } = false;

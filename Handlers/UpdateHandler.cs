@@ -28,6 +28,7 @@ public class UpdateHandler
     private readonly CallbackQueryHandler _callbackQueryHandler;
     private readonly AdminHandler _adminHandler;
     private readonly UserStateService _stateService;
+    private readonly LocationService _locationService;
     private readonly IConfiguration _config;
     private readonly ILogger<UpdateHandler> _logger;
 
@@ -38,6 +39,7 @@ public class UpdateHandler
         CallbackQueryHandler callbackQueryHandler,
         AdminHandler adminHandler,
         UserStateService stateService,
+        LocationService locationService,
         IConfiguration config,
         ILogger<UpdateHandler> logger)
     {
@@ -47,6 +49,7 @@ public class UpdateHandler
         _callbackQueryHandler = callbackQueryHandler;
         _adminHandler = adminHandler;
         _stateService = stateService;
+        _locationService = locationService;
         _config = config;
         _logger = logger;
     }
@@ -94,7 +97,7 @@ public class UpdateHandler
         // Block banned users silently (or with a message)
         if (user.IsBanned)
         {
-            await _bot.SendMessage(chatId, UzMessages.BotBanned);
+            await _bot.SendMessage(chatId, MessageResolver.Get(user, "BotBanned"));
             return;
         }
 
@@ -119,7 +122,7 @@ public class UpdateHandler
         if (state == null)
         {
             // No active state — unknown input
-            await _bot.SendMessage(chatId, UzMessages.UnknownCommand);
+            await _bot.SendMessage(chatId, MessageResolver.Get(user, "UnknownCommand"));
             return;
         }
 
@@ -135,17 +138,13 @@ public class UpdateHandler
                 await _commandHandler.SendForecastAsync(chatId, user, text);
                 break;
 
-            case "awaiting_subscribe_city":
+            case "awaiting_reminder_city":
                 _stateService.ClearState(user.TelegramUserId);
-                // Show hour picker for the city the user typed
-                await _bot.SendMessage(
-                    chatId,
-                    UzMessages.SubscribeSelectHour,
-                    replyMarkup: BotKeyboards.SubscribeHourPicker(text));
+                await _bot.SendMessage(chatId, MessageResolver.Get(user, "ReminderSelectHour"),
+                    replyMarkup: BotKeyboards.ReminderHourPicker(user, text));
                 break;
 
             case "awaiting_broadcast":
-                // Admin wrote the broadcast message — send it to everyone
                 await _adminHandler.HandleBroadcastTextAsync(chatId, user, text);
                 break;
 
@@ -159,7 +158,7 @@ public class UpdateHandler
 
             default:
                 _stateService.ClearState(user.TelegramUserId);
-                await _bot.SendMessage(chatId, UzMessages.UnknownCommand);
+                await _bot.SendMessage(chatId, MessageResolver.Get(user, "UnknownCommand"));
                 break;
         }
     }
