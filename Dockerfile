@@ -7,7 +7,7 @@ RUN dotnet restore
 
 # Copy everything else and publish
 COPY . .
-RUN dotnet publish -c Release -o /out --no-restore
+RUN dotnet publish -c Release -o /out
 
 # Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0

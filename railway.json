@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/railway.schema",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "dotnet SkyBot.dll",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300
+  }
+}
