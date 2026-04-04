@@ -114,7 +114,7 @@ using (var scope = app.Services.CreateScope())
     var secretToken  = app.Configuration["BotSettings:SecretToken"]
         ?? throw new InvalidOperationException("BotSettings:SecretToken is missing.");
 
-    var webhookUrl = $"{webhookBase.TrimEnd('/')}/{secretToken}";
+    var webhookUrl = $"{webhookBase.TrimEnd('/')}/bot/{secretToken}";
 
     await botClient.SetWebhook(
         url: webhookUrl,
