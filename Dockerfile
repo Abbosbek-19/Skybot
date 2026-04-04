@@ -15,6 +15,4 @@ WORKDIR /app
 COPY --from=build /out .
 
 EXPOSE 3000
-ENV ASPNETCORE_URLS=http://0.0.0.0:3000
-
-ENTRYPOINT ["dotnet", "SkyBot.dll"]
+CMD ["sh", "-c", "ASPNETCORE_URLS=http://0.0.0.0:${PORT:-3000} dotnet SkyBot.dll"]
